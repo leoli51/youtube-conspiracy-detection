@@ -1,7 +1,7 @@
 # Scratch file to do random tests
 import google.auth
-from youtube.client import YouTubeClient
 import google.auth.transport.requests
+from youtube.client import YouTubeClient
 
 credentials, project = google.auth.default(
 	scopes=[
@@ -12,11 +12,13 @@ credentials, project = google.auth.default(
 	]
 )
 
-auth_request = google.auth.transport.requests.Request()
-credentials.refresh(auth_request)
+# auth_request = google.auth.transport.requests.Request()
+# credentials.refresh(auth_request)
 
-print(credentials)
-print(project)
+# print(credentials)
+# print(project)
 
 yt_client = YouTubeClient(credentials=credentials)
-yt_client.search()
+response = yt_client.search()
+for item in response:
+	print(item)
