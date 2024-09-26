@@ -10,6 +10,16 @@ python = "^3.10"
 google-api-python-client = "^2.147.0"
 
 
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.6.7"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "tab"
