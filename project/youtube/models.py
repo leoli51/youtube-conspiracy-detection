@@ -54,3 +54,12 @@ class SearchResultItem:
 			},
 			title=api_response["snippet"]["title"],
 		)
+
+
+if __name__ == "__main__":
+	import json
+	from pprint import pprint
+
+	with open("project/youtube/response_example.json") as response_file:
+		response = json.load(response_file)
+		pprint([SearchResultItem.from_api_response(item_raw) for item_raw in response["items"]])
