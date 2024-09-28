@@ -19,6 +19,6 @@ credentials, project = google.auth.default(
 # print(project)
 
 yt_client = YouTubeClient(credentials=credentials)
-response = yt_client.search()
+response = yt_client.search(max_results=100)
 for item in response:
 	print(item)
