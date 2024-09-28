@@ -4,6 +4,7 @@ import googleapiclient.discovery
 from google.auth.credentials import Credentials
 
 from youtube.models import SearchResultItem
+from datetime import datetime
 
 
 class YouTubeClient:
@@ -26,6 +27,8 @@ class YouTubeClient:
 	def search(
 		self,
 		max_results: int,
+		published_after: datetime | None = None,
+		published_before: datetime | None = None,
 		region_code: str | None = None,
 		relevance_language: str | None = None,
 		result_type: str = "video",
@@ -36,6 +39,8 @@ class YouTubeClient:
 		Full documentation of API available at https://developers.google.com/youtube/v3/docs/search/list.
 
 		:param max_results: retrieve up to this number of results, set to -1 to retrive all the results, use with care.
+		:param published_after: return resources created after this time.
+		:param published_before: return resources created before this time.
 		:param region_code: return search results for videos that can be viewed in the specified country. The parameter value is an ISO 3166-1 alpha-2 country code.
 		:param relevance_language: return search results that are most relevant to the specified language. The parameter value is typically an ISO 639-1 two-letter language code. However, you should use the values zh-Hans for simplified Chinese and zh-Hant for traditional Chinese. Please note that results in other languages will still be returned if they are highly relevant to the search query term.
 		:param safe_search: whether the search results should include restricted content as well as standard content.
@@ -45,6 +50,8 @@ class YouTubeClient:
 		request = self.service.search().list(
 			maxResults=50,  # maximum value accepted, why should it be less if we are not worried about bandwidth/data consumption?
 			part="snippet",
+			publishedAfter=published_after.isoformat(timespec="seconds"),
+			publishedBefore=published_before.isoformat(timespec="seconds"),
 			regionCode=region_code,
 			relevanceLanguage=relevance_language,
 			safeSearch=safe_search,
