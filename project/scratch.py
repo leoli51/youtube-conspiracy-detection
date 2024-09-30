@@ -1,6 +1,7 @@
 # Scratch file to do random tests
 import google.auth
 import google.auth.transport.requests
+
 from project.youtube.client import YouTubeClient
 
 credentials, project = google.auth.default(

@@ -9,6 +9,7 @@ from project.youtube.models import SearchResultItem
 
 class YouTubeClient:
 	"""Client to access YouTube's APIs."""
+
 	# TODO: get information about videos via the videos API
 	# TODO: get information about comments via the commentsThread API
 
@@ -47,7 +48,7 @@ class YouTubeClient:
 		:param order: method that will be used to order resources in the API response.
 		:param published_after: return resources created after this time.
 		:param published_before: return resources created before this time.
-		:param query: specifies the query term to search for. Your request can also use the Boolean NOT (-) and OR (|) operators to exclude videos or to find videos that are associated with one of several search terms. 
+		:param query: specifies the query term to search for. Your request can also use the Boolean NOT (-) and OR (|) operators to exclude videos or to find videos that are associated with one of several search terms.
 		:param region_code: return search results for videos that can be viewed in the specified country. The parameter value is an ISO 3166-1 alpha-2 country code.
 		:param relevance_language: return search results that are most relevant to the specified language. The parameter value is typically an ISO 639-1 two-letter language code. However, you should use the values zh-Hans for simplified Chinese and zh-Hant for traditional Chinese. Please note that results in other languages will still be returned if they are highly relevant to the search query term.
 		:param safe_search: whether the search results should include restricted content as well as standard content.
@@ -57,8 +58,12 @@ class YouTubeClient:
 			maxResults=50,  # maximum value accepted, why should it be less if we are not worried about bandwidth/data consumption?
 			order=order,
 			part="snippet",
-			publishedAfter=published_after.isoformat(timespec="seconds") if published_after else None,
-			publishedBefore=published_before.isoformat(timespec="seconds") if published_before else None,
+			publishedAfter=published_after.isoformat(timespec="seconds")
+			if published_after
+			else None,
+			publishedBefore=published_before.isoformat(timespec="seconds")
+			if published_before
+			else None,
 			q=query,
 			regionCode=region_code,
 			relevanceLanguage=relevance_language,
