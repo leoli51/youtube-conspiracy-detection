@@ -1,10 +1,10 @@
+from datetime import datetime
 from typing import Literal
 
 import googleapiclient.discovery
 from google.auth.credentials import Credentials
 
-from youtube.models import SearchResultItem
-from datetime import datetime
+from project.youtube.models import SearchResultItem
 
 
 class YouTubeClient:
