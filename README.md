@@ -22,5 +22,6 @@ To setup authentication through the Gcloud CLI follow these steps:
 5. Authenticate with `gcloud auth application-default login --scopes=openid,https://www.googleapis.com/auth/cloud-platform,https://www.googleapis.com/auth/youtube`.
 
 Note: if you will need other authentication scopes you will have to add them in the `--scopes` list and reauthenticate.
+
 Note: This took a while to figure out, [thank you](https://stackoverflow.com/questions/72526314/google-sheet-api-access-with-application-default-credentials-using-scopes-giving)! 
 
