@@ -25,3 +25,7 @@ Note: if you will need other authentication scopes you will have to add them in 
 
 Note: This took a while to figure out, [thank you](https://stackoverflow.com/questions/72526314/google-sheet-api-access-with-application-default-credentials-using-scopes-giving)! 
 
+## Running notebooks
+
+To run the notebooks you need to start the jupyter server in the environment. You can do this by running `poetry run jupyter notebook`.
+
