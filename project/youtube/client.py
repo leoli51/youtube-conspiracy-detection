@@ -58,10 +58,10 @@ class YouTubeClient:
 			maxResults=50,  # maximum value accepted, why should it be less if we are not worried about bandwidth/data consumption?
 			order=order,
 			part="snippet",
-			publishedAfter=published_after.isoformat(timespec="seconds")
+			publishedAfter=published_after.isoformat(timespec="seconds") + "Z"
 			if published_after
 			else None,
-			publishedBefore=published_before.isoformat(timespec="seconds")
+			publishedBefore=published_before.isoformat(timespec="seconds") + "Z"
 			if published_before
 			else None,
 			q=query,
@@ -73,14 +73,11 @@ class YouTubeClient:
 			videoDuration=duration,
 		)
 
-		response = request.execute()
 		search_result_items = []
-		while response is not None and (
-			len(search_result_items) < max_results or max_results == -1
-		):
+		while request is not None and (len(search_result_items) < max_results or max_results == -1):
+			response = request.execute()
 			search_result_items += [
 				SearchResultItem.from_api_response(item_raw) for item_raw in response["items"]
 			]
-			response = self.service.search().list_next(request, response).execute()
-
+			request = self.service.search().list_next(request, response)
 		return search_result_items
