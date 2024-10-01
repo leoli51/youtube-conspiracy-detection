@@ -57,6 +57,17 @@ class SearchResultItem:
 			title=api_response["snippet"]["title"],
 		)
 
+	@classmethod
+	def from_dict(cls, dic: dict[str, Any]) -> SearchResultItem:
+		override_dict = {
+			"published_at": dateutil.parser.parse(dic["published_at"]),
+			"thumbnails": {
+				thumbnail_key: Thumbnail(**thumbnail_dict)
+				for thumbnail_key, thumbnail_dict in dic["thumbnails"].items()
+			},
+		}
+		return cls(**(dic | override_dict))
+
 
 if __name__ == "__main__":
 	import json
@@ -67,3 +78,7 @@ if __name__ == "__main__":
 
 	with open("project/youtube/serialized_searchresult.json", "w") as serialize_file:
 		json.dump(models, serialize_file, cls=EnhancedJSONEncoder)
+
+	with open("project/youtube/serialized_searchresult.json") as serialize_file:
+		raw_samples = json.load(serialize_file)
+		print(SearchResultItem.from_dict(raw_samples[0]))
