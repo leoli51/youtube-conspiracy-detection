@@ -29,3 +29,25 @@ Note: This took a while to figure out, [thank you](https://stackoverflow.com/que
 
 To run the notebooks you need to start the jupyter server in the environment. You can do this by running `poetry run jupyter notebook`.
 
+## Papers Summaries
+
+### "It is just a flu": Assessing the Effect of watch history on YouTube's Pseudoscientific Video Recommendations.
+
+*Papadamou, K., Zannettou, S., Blackburn, J., Cristofaro, E. D., Stringhini, G., & Sirivianos, M. (2022). “It Is Just a Flu”: Assessing the Effect of Watch History on YouTube’s Pseudoscientific Video Recommendations. Proceedings of the International AAAI Conference on Web and Social Media, 16(1), 723-734. https://doi.org/10.1609/icwsm.v16i1.19329*
+
+Notes: requested access to dataset used in the study at https://zenodo.org/records/4769731
+
+**Research questions**:
+- RQ1: Can we effectively detect and characterize pseudoscientific content on YouTube?
+- RQ2: What is the proportion of pseudoscientific content on the homepage of a YouTube user, in search results, and the video recommendations section of YouTube? How are these proportions affected by the user’s watch history?
+
+**Summary**:
+
+- **Groundtruth dataset**: crowdsourced (Appen) groundtruth dataset. 1,197 science, 1,325 pseudoscience, and 3,212 irrelevant videos. Due to limited agreement scores, 600 videos have been manually annotated by the authors to test the groundtruth dataset quality.
+- **Classifier**: Input: snippet, video tags, transcript, 200 top comments. Inputs are embedded using fine-tuned FastText models for each input feature (?). Each input feature is transformed into a 300-dimensional embeddings vector. Model is a four-layer fully connected network with ReLu activations. The layers sizes are: 256, 128, 64, and 32. Thi results in `(1200 (input) + 1 (bias)) * 256 + (256 + 1 (bias)) * 128 + (128 + 1 (bias)) * 64 + (64 + 1 (bias)) * 32 + (32 + 1 (bias)) * 2 (output) = 350754 parameters`. The model is trained with dropout technique. Threshold for pseudoscientific label 0.7 (🤔 in the dataset the pseudoscience videos are 0.3 of the total). Accuracy 0.79, better than BERT based model (same but BERT instead of FastText), SVM, and Random Forest.
+- **Analysis of Homepage, Search, and Recommendations**: they study the amount of misinformation videos in these three environments. They use three user profiles with a controlled watch history: a user interested in scientific content, a user interested in pseudoscientific content, and a user with interests in both. Furthermore they also perform the experiments with a non-logged in user and the Data API.
+
+**Findings**:
+- YouTube targets specific misinformation topics in its policies: there were less/no misinformation videos related to Covid.
+- Watch history affects suggested videos.
+- Statistically insignificant difference between results of non-logged in user (browser) and Data API.
