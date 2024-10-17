@@ -63,3 +63,22 @@ In this paper they deeply explore youtube's watch-next algorithm. Training set a
 - **Training set for Classifier**: Initial set of 200 videos from "Top 201 Conspiracy Theory Videos on YouTube" book, plus some videos harvested from 4chan, r/conspiracy, r/conspiracyhub, r/healthconspiracy, and a set of 200 random non conspirational videos. Final set: 542 conspirations, 568 non conspirational, manually curated.
 - **Classifier**: Inputs: transcript, snippet, top-200 comments, perceived impact of comments (Google's Perspective API). Each input feature is processed independently (different ways) and gets assigned a score. The scores are combined in a final logistic regression layer.
 - **Analysis of trends of recommended videos**: Using the classifier they study the videos gathered through the recommendation engine simulation. The results show that Youtube's policies to fight misinformation did actually have an effect on the recommendations.
+
+
+### YouNICon: YouTube’s CommuNIty of Conspiracy Videos
+
+*Shao Yi Liaw, Fan Huang, Fabricio Benevenuto, Haewoon Kwak, & Jisun An. (2023). YouNICon: YouTube's CommuNIty of Conspiracy Videos (Version V1) [Data set]. Zenodo. https://doi.org/10.5281/zenodo.7539706*
+
+Annotated dataset of conspiracy videos available at: https://zenodo.org/records/7539706
+
+**Summary**:
+YOUNICON is a curated dataset of YouTube videos from channels identified as producing conspiracy content by Recfluence. The final result is a set of 3161 videos manually labeled with the positive class (conspiracy theory).
+
+
+### A Taxonomy of Online Harm and MLLMs (GPT-4-Turbo) as Alternative Annotators
+
+*Jo, C. W., Wesołowska, M., & Wojcieszak, M. (2024, September 2). Harmful YouTube Video Detection: A Taxonomy of Online Harm and MLLMs  (GPT-4-Turbo) as Alternative Annotators. https://doi.org/10.31219/osf.io/2dn8s*
+
+**Summary**:
+- **Defining harmful content**: They identify six categories of harmful content, an item could present multiple harm categories at the same time. **Information harms** is one of these categories, conspiracy theories is one of its subacategories.
+- **Dataset**: They build a dataset mad
