@@ -4,7 +4,7 @@ from typing import Literal
 import googleapiclient.discovery
 from google.auth.credentials import Credentials
 
-from project.youtube.models import SearchResultItem
+from project.youtube.models import SearchResult, Video
 
 
 class YouTubeClient:
@@ -39,7 +39,7 @@ class YouTubeClient:
 		relevance_language: str | None = None,
 		safe_search: Literal["moderate", "none", "strict"] = "none",
 		topic_id: str | None = None,
-	) -> list[SearchResultItem]:
+	) -> list[SearchResult]:
 		"""
 		Full documentation of API available at https://developers.google.com/youtube/v3/docs/search/list.
 
@@ -77,7 +77,15 @@ class YouTubeClient:
 		while request is not None and (len(search_result_items) < max_results or max_results == -1):
 			response = request.execute()
 			search_result_items += [
-				SearchResultItem.from_api_response(item_raw) for item_raw in response["items"]
+				SearchResult.from_api_response(item_raw) for item_raw in response["items"]
 			]
 			request = self.service.search().list_next(request, response)
 		return search_result_items
+
+	def get_videos(self, ids: list[str]) -> list[Video]:
+		request = self.service.videos().list(
+			part="contentDetails,id,localizations,paidProductPlacementDetails,snippet,statistics,topicDetails",
+			id=",".join(ids),
+		)
+		response = request.execute()
+		return [Video.from_api_response(item_raw) for item_raw in response["items"]]
