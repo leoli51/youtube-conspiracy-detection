@@ -25,9 +25,6 @@ Note: if you will need other authentication scopes you will have to add them in 
 
 Note: This took a while to figure out, [thank you](https://stackoverflow.com/questions/72526314/google-sheet-api-access-with-application-default-credentials-using-scopes-giving)! 
 
-## Running notebooks
-
-To run the notebooks you need to start the jupyter server in the environment. You can do this by running `poetry run jupyter notebook`.
 
 ## Papers Summaries
 
@@ -81,4 +78,7 @@ YOUNICON is a curated dataset of YouTube videos from channels identified as prod
 
 **Summary**:
 - **Defining harmful content**: They identify six categories of harmful content, an item could present multiple harm categories at the same time. **Information harms** is one of these categories, conspiracy theories is one of its subacategories.
-- **Dataset**: They build a dataset mad
+- **Dataset**: They build a dataset leveraging three approaches: 1. Keyword-based approach: (keywords n=169) retrieve 50-500 search results per keyword with recency and relevance filters (7:3 ratio). 2. Channel based approach: identify harmful channels (n=100). 3. External dataset integration: YouNiCon and others. For each video 15 image frames (random sample) and 1 thumbnail. Videos where classified by a) GPT-4 Turbo b) Crowdworkers (MTurk) c) domain experts.
+
+**Overlap with our work?**:
+The focus of their work is to measure the performance of MLLMs (GPT 4 Turbo) as alternative annotators for harmful content online. They only focus on GPT 4 Turbo. They focus on multiple harm categories, of which conspiracy theories is only a subcategory of information harms. The focus of our work is different: first, we test different, open source models, second we exploit the model to perform an analysis similar to the one in "A longitudinal analysis of YouTube’s promotion of conspiracy videos". 
