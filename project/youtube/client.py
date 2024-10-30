@@ -84,7 +84,7 @@ class YouTubeClient:
 
 	def get_videos(self, ids: list[str]) -> list[Video]:
 		request = self.service.videos().list(
-			part="contentDetails,id,localizations,paidProductPlacementDetails,snippet,statistics,topicDetails",
+			part="contentDetails,id,localizations,paidProductPlacementDetails,snippet,statistics,topicDetails,recordingDetails",
 			id=",".join(ids),
 		)
 		response = request.execute()

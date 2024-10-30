@@ -104,6 +104,8 @@ class Video:
 	id: str
 	like_count: int
 	localizations: dict[str, Localization]
+	location_description: str | None
+	location: tuple[float, float, float] | None
 	projection: str  # 360 or rectangular
 	published_at: datetime
 	tags: list[str]
@@ -114,9 +116,15 @@ class Video:
 
 	@classmethod
 	def from_api_response(cls, api_response: Any):
-		snippet = api_response.get("snippet", {})
 		content_details = api_response.get("contentDetails", {})
+		recording_details = api_response.get("recordingDetails", {})
+		snippet = api_response.get("snippet", {})
 		statistics = api_response.get("statistics", {})
+		location = recording_details.get("location", {})
+		lat = location.get("latitude")
+		long = location.get("longitude")
+		alt = location.get("altitude")
+		location = (lat, long, alt) if lat or long else None
 
 		return cls(
 			allowed_regions=content_details.get("regionRestriction", {}).get("allowed"),
@@ -141,6 +149,8 @@ class Video:
 				country_code: Localization.from_api_response(localization_data)
 				for country_code, localization_data in api_response.get("localizations", {}).items()
 			},
+			location_description=recording_details.get("locationDescription"),
+			location=location,
 			projection=content_details.get("projection"),
 			published_at=dateutil.parser.parse(snippet.get("publishedAt")),
 			tags=snippet.get("tags"),
