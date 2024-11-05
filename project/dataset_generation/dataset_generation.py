@@ -72,10 +72,9 @@ def generate_dataset_entry_from_video_id(
 	# Move thumbnail to images
 	dataset_images_folder = DATASET_IMAGES_FOLDER.format(destination_folder)
 	os.makedirs(dataset_images_folder, exist_ok=True)
-	thumbnail_filename = f"{video_id}.webp"
 	os.rename(
-		os.path.join(ytdlp_metadata_destination_folder, thumbnail_filename),
-		os.path.join(dataset_images_folder, thumbnail_filename),
+		os.path.join(ytdlp_metadata_destination_folder, f"{video_id}.webp"),
+		os.path.join(dataset_images_folder, f"{video_id}_thumbnail.webp"),
 	)
 
 	# Extract frames from video
