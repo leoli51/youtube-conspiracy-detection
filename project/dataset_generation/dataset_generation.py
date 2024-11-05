@@ -17,7 +17,6 @@ YT_DLP_SUBS_FILENAME_FORMAT = "{}.en.srt"
 YT_DLP_AUTO_SUBS_FILENAME_FORMAT = "{}.auto-subs.en.srt"
 
 DATASET_YT_DLP_DESTINATION_FOLDER = "{}/ytdlp-metadata"
-DATASET_METADATA_FOLDER = "{}/metadata"
 DATASET_IMAGES_FOLDER = "{}/images"
 
 
@@ -110,22 +109,35 @@ def generate_dataset_from_video_ids(
 	delete_ytdlp_metadata: bool = True,
 ) -> list[YouTubeVideoInfo]:
 	dataset_metadata = []
+	failed_ids = []
 	for video_id in video_ids:
-		dataset_metadata.append(
-			generate_dataset_entry_from_video_id(
-				yt_client,
-				video_id,
-				destination_folder,
-				frames_per_video,
-				delete_ytdlp_metadata,
+		try:
+			dataset_metadata.append(
+				generate_dataset_entry_from_video_id(
+					yt_client,
+					video_id,
+					destination_folder,
+					frames_per_video,
+					delete_ytdlp_metadata,
+				)
 			)
-		)
-	# TODO: save to json
+		except Exception as exception:
+			print(exception)
+			failed_ids.append(video_id)
+			continue
+
+	dataset_filename = os.path.join(destination_folder, "videos_infos.json")
+	with open(dataset_filename, "w") as dataset_file:
+		json.dump(dataset_metadata, dataset_file, cls=EnhancedJSONEncoder)
+	failed_filename = os.path.join(destination_folder, "failed.json")
+	with open(failed_filename, "w") as failed_file:
+		json.dump(failed_ids, failed_file, cls=EnhancedJSONEncoder)
 	return dataset_metadata
 
 
 if __name__ == "__main__":
 	yt_client = None
 	import random
+
 	random.seed(42)
 	generate_dataset_from_video_ids(yt_client, ["dQw4w9WgXcQ"], "data/mydataset-test", 3, False)
