@@ -6,7 +6,7 @@ from typing import Any, Literal
 
 import dateutil
 
-from project.utils.json import EnhancedJSONEncoder
+from project.utils.json_utils import EnhancedJSONEncoder
 
 
 @dataclass(frozen=True)
