@@ -36,16 +36,25 @@ def generate_dataset_entry_from_video_id(
 	# Download video, info, subs, auto-subs
 	yt_dlp_download.download_video_and_metadata(video_id, ytdlp_metadata_destination_folder)
 
-	with open(YT_DLP_INFO_JSON_FILENAME_FORMAT.format(video_id), "r") as info_file:
+	with open(
+		os.path.join(
+			ytdlp_metadata_destination_folder, YT_DLP_INFO_JSON_FILENAME_FORMAT.format(video_id)
+		),
+		"r",
+	) as info_file:
 		info_json = json.load(info_file)
 
-	subs_filename = YT_DLP_SUBS_FILENAME_FORMAT.format(video_id)
+	subs_filename = os.path.join(
+		ytdlp_metadata_destination_folder, YT_DLP_SUBS_FILENAME_FORMAT.format(video_id)
+	)
 	subs = None
 	if os.path.exists(subs_filename):
 		with open(subs_filename, "r") as subs_file:
 			subs = subs_file.read()
 
-	auto_subs_filename = YT_DLP_AUTO_SUBS_FILENAME_FORMAT.format(video_id)
+	auto_subs_filename = os.path.join(
+		ytdlp_metadata_destination_folder, YT_DLP_AUTO_SUBS_FILENAME_FORMAT.format(video_id)
+	)
 	auto_subs = None
 	if os.path.exists(auto_subs_filename):
 		with open(auto_subs_filename, "r") as auto_subs_file:
@@ -77,12 +86,13 @@ def generate_dataset_entry_from_video_id(
 		dataset_images_folder,
 		f"{video_id}_rand",
 	)
-	extract_frames_at_times(
-		video_path,
-		sample_heatmap(yt_video_info.heatmap, frames_to_extract),
-		dataset_images_folder,
-		f"{video_id}_hm",
-	)
+	if yt_video_info.heatmap:
+		extract_frames_at_times(
+			video_path,
+			sample_heatmap(yt_video_info.heatmap, frames_to_extract),
+			dataset_images_folder,
+			f"{video_id}_hm",
+		)
 	extract_frames_at_times(
 		video_path,
 		sample_fixed_interval(yt_video_info.duration_s, frames_to_extract),
@@ -122,6 +132,7 @@ def generate_dataset_from_video_ids(
 				)
 			)
 		except Exception as exception:
+			print(f"Error while processing {video_id}")
 			print(exception)
 			failed_ids.append(video_id)
 			continue
@@ -136,8 +147,9 @@ def generate_dataset_from_video_ids(
 
 
 if __name__ == "__main__":
-	yt_client = None
 	import random
 
 	random.seed(42)
-	generate_dataset_from_video_ids(yt_client, ["dQw4w9WgXcQ"], "data/mydataset-test", 3, False)
+	generate_dataset_from_video_ids(
+		None, ["dQw4w9WgXcQ", "csdXyd3B2EQ"], "data/mydataset-test", 3, False
+	)
