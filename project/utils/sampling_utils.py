@@ -4,7 +4,9 @@ from project.models import HeatmapItem
 
 
 def sample_heatmap(heatmap: list[HeatmapItem], samples: int) -> list[float]:
-	return [hmi.start_s for hmi in sorted(heatmap, key=lambda e: e.intensity, reverse=True)[:samples]]
+	return [
+		hmi.start_s for hmi in sorted(heatmap, key=lambda e: e.intensity, reverse=True)[:samples]
+	]
 
 
 def sample_fixed_interval(duration_s: float, samples: int) -> list[float]:
