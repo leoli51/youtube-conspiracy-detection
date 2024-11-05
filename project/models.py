@@ -137,3 +137,14 @@ class YouTubeVideoInfo:
 			title=yt_dlp_info["title"],
 			view_count=yt_dlp_info["view_count"],
 		)
+
+	@classmethod
+	def from_json(cls, json_data: Any) -> YouTubeVideoInfo:
+		heatmap = (
+			[HeatmapItem(**hmi) for hmi in json_data["heatmap"]]
+			if json_data.get("heatmap")
+			else None
+		)
+		comments = [YouTubeComment(**comment) for comment in json_data["comments"]]
+		json_data |= {"heatmap": heatmap, "comments": comments}
+		return cls(**json_data)
