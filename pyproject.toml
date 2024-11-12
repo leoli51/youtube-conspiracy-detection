@@ -12,6 +12,7 @@ python-dateutil = "^2.9.0.post0"
 pandas = "^2.2.3"
 yt-dlp = "^2024.10.22"
 ffmpeg-python = "^0.2.0"
+ollama = "^0.3.3"
 
 
 [tool.poetry.group.dev.dependencies]
