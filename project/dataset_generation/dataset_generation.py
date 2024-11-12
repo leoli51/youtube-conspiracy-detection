@@ -25,35 +25,43 @@ def generate_dataset_entry_from_video_id(
 	video_id: str,
 	destination_folder: str,
 	frames_to_extract: int,
-	delete_ytdlp_metadata: bool = True,
+	delete_ytdlp_data_after: bool = True,
+	working_folder: str | None = None,
 ) -> YouTubeVideoInfo:
 	"""
 	Download all the data for a single video.
+
+	:param yt_client: The YouTubeClient to use to download the video's metadata when necessary.
+	:param video_id: The id of the video.
+	:param destination_folder: The extracted data (frames) will be moved to this folder under an /images folder.
+	:param frames_to_extract: The number of frames to extract for each sampling technique.
+	:param delete_ytdlp_data_after: Whether to delete the raw ytdlp data after having processed the video.
+	:param working_folder: The folder to use for downloading and processing the raw data. This parameter can be used to process already downloaded data, without downloading it (at least the mp4) again.
+	:return: The YouTubeVideoInfo objct containing all the info of the video, the extracted frames are in the destination_folder/images folder.
 	"""
 	ytdlp_metadata_destination_folder = DATASET_YT_DLP_DESTINATION_FOLDER.format(destination_folder)
 	os.makedirs(ytdlp_metadata_destination_folder, exist_ok=True)
 
+	if working_folder is None:
+		working_folder = ytdlp_metadata_destination_folder
+
 	# Download video, info, subs, auto-subs
-	yt_dlp_download.download_video_and_metadata(video_id, ytdlp_metadata_destination_folder)
+	yt_dlp_download.download_video_and_metadata(video_id, working_folder)
 
 	with open(
-		os.path.join(
-			ytdlp_metadata_destination_folder, YT_DLP_INFO_JSON_FILENAME_FORMAT.format(video_id)
-		),
+		os.path.join(working_folder, YT_DLP_INFO_JSON_FILENAME_FORMAT.format(video_id)),
 		"r",
 	) as info_file:
 		info_json = json.load(info_file)
 
-	subs_filename = os.path.join(
-		ytdlp_metadata_destination_folder, YT_DLP_SUBS_FILENAME_FORMAT.format(video_id)
-	)
+	subs_filename = os.path.join(working_folder, YT_DLP_SUBS_FILENAME_FORMAT.format(video_id))
 	subs = None
 	if os.path.exists(subs_filename):
 		with open(subs_filename, "r") as subs_file:
 			subs = subs_file.read()
 
 	auto_subs_filename = os.path.join(
-		ytdlp_metadata_destination_folder, YT_DLP_AUTO_SUBS_FILENAME_FORMAT.format(video_id)
+		working_folder, YT_DLP_AUTO_SUBS_FILENAME_FORMAT.format(video_id)
 	)
 	auto_subs = None
 	if os.path.exists(auto_subs_filename):
@@ -72,13 +80,17 @@ def generate_dataset_entry_from_video_id(
 	# Move thumbnail to images
 	dataset_images_folder = DATASET_IMAGES_FOLDER.format(destination_folder)
 	os.makedirs(dataset_images_folder, exist_ok=True)
-	os.rename(
-		os.path.join(ytdlp_metadata_destination_folder, f"{video_id}.webp"),
-		os.path.join(dataset_images_folder, f"{video_id}_thumbnail.webp"),
-	)
+	for extension in ["webp", "jpg"]:
+		thumbnail_file_path = os.path.join(working_folder, f"{video_id}.{extension}")
+		if not os.path.isfile(thumbnail_file_path):
+			continue
+		os.rename(
+			os.path.join(thumbnail_file_path),
+			os.path.join(dataset_images_folder, f"{video_id}_thumbnail.{extension}"),
+		)
 
 	# Extract frames from video
-	video_path = os.path.join(ytdlp_metadata_destination_folder, f"{video_id}.mp4")
+	video_path = os.path.join(working_folder, f"{video_id}.mp4")
 	extract_frames_at_times(
 		video_path,
 		sample_random(yt_video_info.duration_s, frames_to_extract),
@@ -99,12 +111,9 @@ def generate_dataset_entry_from_video_id(
 		f"{video_id}_fi",
 	)
 
-	# Delete: video
-	# TODO: implement after testing to avoid downloading the same video 1000 times
-
 	# Delete info, subs, video
-	if delete_ytdlp_metadata:
-		for filepath in glob.glob(os.path.join(ytdlp_metadata_destination_folder, f"{video_id}.*")):
+	if delete_ytdlp_data_after:
+		for filepath in glob.glob(os.path.join(working_folder, f"{video_id}.*")):
 			os.remove(filepath)
 
 	return yt_video_info
@@ -115,11 +124,15 @@ def generate_dataset_from_video_ids(
 	video_ids: list[str],
 	destination_folder: str,
 	frames_per_video: int,
-	delete_ytdlp_metadata: bool = True,
+	delete_ytdlp_data_after: bool = True,
+	working_folder: str | None = None,
 ) -> list[YouTubeVideoInfo]:
+	if working_folder is None:
+		working_folder = destination_folder
 	dataset_metadata = []
-	failed_ids = []
-	for video_id in video_ids:
+	failed = dict()
+	for i, video_id in enumerate(video_ids):
+		print(f"Processing video {i}/{len(video_ids)} ⚙️")
 		try:
 			dataset_metadata.append(
 				generate_dataset_entry_from_video_id(
@@ -127,13 +140,14 @@ def generate_dataset_from_video_ids(
 					video_id,
 					destination_folder,
 					frames_per_video,
-					delete_ytdlp_metadata,
+					delete_ytdlp_data_after,
+					working_folder,
 				)
 			)
 		except Exception as exception:
 			print(f"Error while processing {video_id}")
 			print(exception)
-			failed_ids.append(video_id)
+			failed[video_id] = str(exception)
 			continue
 
 	dataset_filename = os.path.join(destination_folder, "videos_infos.json")
@@ -141,7 +155,7 @@ def generate_dataset_from_video_ids(
 		json.dump(dataset_metadata, dataset_file, cls=EnhancedJSONEncoder)
 	failed_filename = os.path.join(destination_folder, "failed.json")
 	with open(failed_filename, "w") as failed_file:
-		json.dump(failed_ids, failed_file, cls=EnhancedJSONEncoder)
+		json.dump(failed, failed_file, cls=EnhancedJSONEncoder)
 	return dataset_metadata
 
 
