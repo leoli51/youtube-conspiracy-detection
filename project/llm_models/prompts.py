@@ -15,7 +15,7 @@ Your task is to analyze the information provided and determine if the video prom
 
 If the video contains conspiracy content, respond with `1`. If it does not contain conspiracy content, respond with `0`. 
 
-**Important**:
+Important:
 - Consider cues such as references to widely debunked theories, phrases suggesting secrecy, and terms commonly associated with conspiracy theories.
 - Remain neutral and focus on the content rather than view counts or popularity alone.
 - Only respond with `1` or `0` based on the classification.
