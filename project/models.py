@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
+
+from project.utils.json_utils import EnhancedJSONEncoder
 
 
 @dataclass(frozen=True)
@@ -112,7 +115,7 @@ class YouTubeVideoInfo:
 			channel_id=yt_dlp_info["channel_id"],
 			channel_title=yt_dlp_info["channel"],
 			channel_subscribers=yt_dlp_info["channel_follower_count"],
-			comment_count=yt_dlp_info.get("comment_count", 0),
+			comment_count=yt_dlp_info.get("comment_count", -1),
 			comments=YouTubeComment.from_yt_dlp_comments(yt_dlp_info.get("comments"))
 			if yt_dlp_info.get("comments")
 			else None,
@@ -124,7 +127,7 @@ class YouTubeVideoInfo:
 				else None
 			),
 			id=yt_dlp_info["id"],
-			like_count=yt_dlp_info["like_count"],
+			like_count=yt_dlp_info.get("like_count", -1),
 			location_description=yt_dlp_info.get("location"),
 			location=location,
 			publish_date=datetime(
@@ -145,6 +148,13 @@ class YouTubeVideoInfo:
 			if json_data.get("heatmap")
 			else None
 		)
-		comments = [YouTubeComment(**comment) for comment in json_data["comments"]]
+		comments = (
+			[YouTubeComment(**comment) for comment in json_data["comments"]]
+			if json_data["comments"]
+			else None
+		)
 		json_data |= {"heatmap": heatmap, "comments": comments}
 		return cls(**json_data)
+
+	def __str__(self) -> str:
+		return json.dumps(self, cls=EnhancedJSONEncoder)
