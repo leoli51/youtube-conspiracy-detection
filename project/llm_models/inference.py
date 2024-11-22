@@ -1,26 +1,24 @@
 import ollama
+from enum import Enum
+
+class OllamaModel(str, Enum):
+	LLAMA_3_2 = "llama3.2"
+	LLAMA_3_2_VISION = "llama3.2-vision"
+	LLAVA = "llava"
 
 
-def chat(model_name: str, prompt: str) -> dict[str, str]:
-	return ollama.chat(
+def generate(model_name: OllamaModel, system_prompt: str, user_prompt: str) -> dict[str, str]:
+	return ollama.generate(
 		model=model_name,
-		messages=[
-			{
-				"role": "user",
-				"content": prompt,
-			}
-		],
+		system=system_prompt,
+		prompt=user_prompt,
 	)
 
 
-def chat_multimodal(model_name: str, prompt: str, images_paths: list[str]) -> dict[str][str]:
-	response = ollama.chat(
+def generate_multimodal(model_name: OllamaModel, system_prompt: str, user_prompt: str, images_paths: list[str]) -> dict[str, str]:
+	response = ollama.generate(
 		model=model_name,
-		messages=[
-			{
-				"role": "user",
-				"content": prompt,
-				"images": images_paths,
-			}
-		],
+		prompt=user_prompt,
+		system=system_prompt,
+		images=images_paths,
 	)
