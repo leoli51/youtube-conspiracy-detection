@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Any
 
 from project.utils.json_utils import EnhancedJSONEncoder
+from project.utils.subtitles_utils import text_from_subtitles
 
 
 @dataclass(frozen=True)
@@ -72,6 +73,25 @@ class YouTubeComment:
 			replies = [comment for comment in all_comments if comment.parent_id == root_comment.id]
 			root_comment.replies = replies
 		return root_comments
+
+	@classmethod
+	def from_json(cls, json_data: Any) -> YouTubeComment:
+		replies = (
+			[YouTubeComment(**reply_data) for reply_data in json_data["replies"]]
+			if json_data.get("replies")
+			else []
+		)
+		json_data |= {"replies": replies}
+		return cls(**json_data)
+
+	def to_string_for_model_input(self, include_replies: bool, leading_tabs: int = 0):
+		tabs = "\t" * leading_tabs
+		sanitized_text = self.text.replace("\n", "\\n")
+		string_parts = [f"{tabs}{self.author_name}: {sanitized_text}"]
+		if include_replies and self.replies:
+			string_parts.append(f"\t{tabs}replies:")
+			string_parts += [f"\t\t{tabs}{reply.to_string_for_model_input(False)}" for reply in self.replies]
+		return "\n".join(string_parts)
 
 
 @dataclass(frozen=True)
@@ -149,7 +169,7 @@ class YouTubeVideoInfo:
 			else None
 		)
 		comments = (
-			[YouTubeComment(**comment) for comment in json_data["comments"]]
+			[YouTubeComment.from_json(comment) for comment in json_data["comments"]]
 			if json_data["comments"]
 			else None
 		)
@@ -158,3 +178,27 @@ class YouTubeVideoInfo:
 
 	def __str__(self) -> str:
 		return json.dumps(self, cls=EnhancedJSONEncoder)
+
+	def to_string_for_model_input(
+		self,
+		attributes_to_include: list[str],
+		max_subtitles_length: int = -1,
+		include_comments_replies: bool = True,
+	) -> str:
+		str_parts = []
+		for attribute in attributes_to_include:
+			if attribute in ["subtitles", "auto_subtitles"]:
+				if not self.__getattribute__(attribute):  # CHeck if the subs are available
+					continue
+				pretty_subs = text_from_subtitles(self.__getattribute__(attribute))
+				pretty_subs = (
+					pretty_subs[:max_subtitles_length] if max_subtitles_length > 0 else pretty_subs
+				)
+				str_parts.append(f"**{attribute}**: {pretty_subs}")
+			elif attribute == "comments":
+				comments_strings = [c.to_string_for_model_input(include_comments_replies, 1) for c in self.comments]
+				comments_string = "\n".join(comments_strings)
+				str_parts.append(f"**{attribute}**:\n{comments_string}")
+			else:
+				str_parts.append(f"**{attribute}**: {self.__getattribute__(attribute)}")
+		return "\n\n".join(str_parts)
