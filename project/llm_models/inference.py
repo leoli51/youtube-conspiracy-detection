@@ -1,5 +1,7 @@
-import ollama
 from enum import Enum
+
+import ollama
+
 
 class OllamaModel(str, Enum):
 	LLAMA_3_2 = "llama3.2"
@@ -15,7 +17,9 @@ def generate(model_name: OllamaModel, system_prompt: str, user_prompt: str) -> d
 	)
 
 
-def generate_multimodal(model_name: OllamaModel, system_prompt: str, user_prompt: str, images_paths: list[str]) -> dict[str, str]:
+def generate_multimodal(
+	model_name: OllamaModel, system_prompt: str, user_prompt: str, images_paths: list[str]
+) -> dict[str, str]:
 	response = ollama.generate(
 		model=model_name,
 		prompt=user_prompt,

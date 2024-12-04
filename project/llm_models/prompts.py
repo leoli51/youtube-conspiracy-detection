@@ -1,5 +1,3 @@
-
-
 def input_full_text_output_binary_version_01() -> str:
 	return f"""
 You are an AI model tasked with classifying videos as either containing conspiracy content or not. For each video, you will receive a JSON-formatted input containing information about the video.
