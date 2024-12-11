@@ -61,7 +61,7 @@ class YouTubeComment:
 	@classmethod
 	def from_yt_dlp_comments(cls, comments_data: list[dict[str, Any]]) -> list[YouTubeComment]:
 		# Comments are retrieved in reply order so we could leverage this order to parse replies
-		# I don't like this method so much, it's not very robus imho.
+		# I don't like this method so much, it's not very robust imho.
 		# Replies have an ID format that is parent_id.reply_id, I will leverage this to parse the
 		# replies.
 		# Not optimized at all, but do we really need to optimize this?
@@ -90,7 +90,9 @@ class YouTubeComment:
 		string_parts = [f"{tabs}{self.author_name}: {sanitized_text}"]
 		if include_replies and self.replies:
 			string_parts.append(f"\t{tabs}replies:")
-			string_parts += [f"\t\t{tabs}{reply.to_string_for_model_input(False)}" for reply in self.replies]
+			string_parts += [
+				f"\t\t{tabs}{reply.to_string_for_model_input(False)}" for reply in self.replies
+			]
 		return "\n".join(string_parts)
 
 
@@ -188,7 +190,8 @@ class YouTubeVideoInfo:
 		str_parts = []
 		for attribute in attributes_to_include:
 			if attribute in ["subtitles", "auto_subtitles"]:
-				if not self.__getattribute__(attribute):  # CHeck if the subs are available
+				if self.__getattribute__(attribute) is None:  # CHeck if the subs are available
+					str_parts.append(f"**{attribute}**: (not available)")
 					continue
 				pretty_subs = text_from_subtitles(self.__getattribute__(attribute))
 				pretty_subs = (
@@ -196,7 +199,12 @@ class YouTubeVideoInfo:
 				)
 				str_parts.append(f"**{attribute}**: {pretty_subs}")
 			elif attribute == "comments":
-				comments_strings = [c.to_string_for_model_input(include_comments_replies, 1) for c in self.comments]
+				if self.__getattribute__(attribute) is None:  # CHeck if the comments are available
+					str_parts.append(f"**{attribute}**: (not available)")
+					continue
+				comments_strings = [
+					c.to_string_for_model_input(include_comments_replies, 1) for c in self.comments
+				]
 				comments_string = "\n".join(comments_strings)
 				str_parts.append(f"**{attribute}**:\n{comments_string}")
 			else:
