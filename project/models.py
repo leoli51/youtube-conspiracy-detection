@@ -184,7 +184,9 @@ class YouTubeVideoInfo:
 	def to_string_for_model_input(
 		self,
 		attributes_to_include: list[str],
+		max_description_length: int = -1,
 		max_subtitles_length: int = -1,
+		max_comments: int = -1,
 		include_comments_replies: bool = True,
 	) -> str:
 		str_parts = []
@@ -202,11 +204,15 @@ class YouTubeVideoInfo:
 				if self.__getattribute__(attribute) is None:  # CHeck if the comments are available
 					str_parts.append(f"**{attribute}**: (not available)")
 					continue
+				comments = self.comments if max_comments == -1 else self.comments[:min([len(self.comments), max_comments])]
 				comments_strings = [
-					c.to_string_for_model_input(include_comments_replies, 1) for c in self.comments
+					c.to_string_for_model_input(include_comments_replies, 1) for c in comments
 				]
 				comments_string = "\n".join(comments_strings)
 				str_parts.append(f"**{attribute}**:\n{comments_string}")
+			elif attribute == "description":
+				cropped_description = self.description[:max_description_length] if max_description_length > -1 else self.description
+				str_parts.append(f"**{attribute}**: {cropped_description}")
 			else:
 				str_parts.append(f"**{attribute}**: {self.__getattribute__(attribute)}")
 		return "\n\n".join(str_parts)
