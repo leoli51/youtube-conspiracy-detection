@@ -10,8 +10,10 @@ class Experiment:
 	attributes_settings: dict[str, Any]
 	attributes: list[str]
 	completions_by_model_and_video_id: dict[str, dict[str, Any]]
+	description: str | None
 	end_time: datetime
 	id: str
+	image_filename_format: str | None
 	models: list[str]
 	predicted_labels_by_model_and_video_id: dict[str, dict[str, Any]]
 	start_time: datetime
@@ -24,8 +26,10 @@ class Experiment:
 		attributes_settings: list[str],
 		attributes: list[str],
 		completions_by_model: dict[str, dict[str, Any]],
+		description: str,
 		end_time: datetime,
 		id: str,
+		image_filename_format: str | None,
 		models: list[str],
 		start_time: datetime,
 		system_prompt: str,
@@ -49,10 +53,20 @@ class Experiment:
 			attributes_settings=attributes_settings,
 			attributes=attributes,
 			completions_by_model_and_video_id=completions_by_model,
+			description=description,
 			end_time=end_time,
 			id=id,
+			image_filename_format=image_filename_format,
 			models=models,
 			predicted_labels_by_model_and_video_id=predicted_labels_by_model,
 			start_time=start_time,
 			system_prompt=system_prompt,
 		)
+
+	@classmethod
+	def from_json(cls, json_data) -> Experiment:
+		json_data["start_time"] = datetime.fromisoformat(json_data["start_time"])
+		json_data["end_time"] = datetime.fromisoformat(json_data["end_time"])
+		json_data["image_filename_format"] = json_data.get("image_filename_format")
+		json_data["description"] = json_data.get("description")
+		return cls(**json_data)
