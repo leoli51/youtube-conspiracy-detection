@@ -46,13 +46,13 @@ def generate_dataset_entry_from_video_id(
 		working_folder = ytdlp_metadata_destination_folder
 
 	# Download video, info, subs, auto-subs
-	yt_dlp_download.download_video_and_metadata(video_id, working_folder)
+	info_json = yt_dlp_download.download_video_and_metadata(video_id, working_folder, download_video=frames_to_extract > 0)
 
-	with open(
-		os.path.join(working_folder, YT_DLP_INFO_JSON_FILENAME_FORMAT.format(video_id)),
-		"r",
-	) as info_file:
-		info_json = json.load(info_file)
+	# with open(
+	# 	os.path.join(working_folder, YT_DLP_INFO_JSON_FILENAME_FORMAT.format(video_id)),
+	# 	"r",
+	# ) as info_file:
+	# 	info_json = json.load(info_file)
 
 	subs_filename = os.path.join(working_folder, YT_DLP_SUBS_FILENAME_FORMAT.format(video_id))
 	subs = None
@@ -70,7 +70,7 @@ def generate_dataset_entry_from_video_id(
 
 	# Check if video has location metadata
 	location = None
-	if info_json.get("location"):
+	if info_json.get("location") and yt_client:
 		data_api_video_data = yt_client.get_videos([video_id])[0]
 		location = data_api_video_data.location
 
@@ -90,26 +90,27 @@ def generate_dataset_entry_from_video_id(
 		)
 
 	# Extract frames from video
-	video_path = os.path.join(working_folder, f"{video_id}.mp4")
-	extract_frames_at_times(
-		video_path,
-		sample_random(yt_video_info.duration_s, frames_to_extract),
-		dataset_images_folder,
-		f"{video_id}_rand",
-	)
-	if yt_video_info.heatmap:
+	if frames_to_extract > 0:
+		video_path = os.path.join(working_folder, f"{video_id}.mp4")
 		extract_frames_at_times(
 			video_path,
-			sample_heatmap(yt_video_info.heatmap, frames_to_extract),
+			sample_random(yt_video_info.duration_s, frames_to_extract),
 			dataset_images_folder,
-			f"{video_id}_hm",
+			f"{video_id}_rand",
 		)
-	extract_frames_at_times(
-		video_path,
-		sample_fixed_interval(yt_video_info.duration_s, frames_to_extract),
-		dataset_images_folder,
-		f"{video_id}_fi",
-	)
+		if yt_video_info.heatmap:
+			extract_frames_at_times(
+				video_path,
+				sample_heatmap(yt_video_info.heatmap, frames_to_extract),
+				dataset_images_folder,
+				f"{video_id}_hm",
+			)
+		extract_frames_at_times(
+			video_path,
+			sample_fixed_interval(yt_video_info.duration_s, frames_to_extract),
+			dataset_images_folder,
+			f"{video_id}_fi",
+		)
 
 	# Delete info, subs, video
 	if delete_ytdlp_data_after:
@@ -126,13 +127,35 @@ def generate_dataset_from_video_ids(
 	frames_per_video: int,
 	delete_ytdlp_data_after: bool = True,
 	working_folder: str | None = None,
+	save_every_n_videos: int = 100,
+	resume_from_file: bool = False,
 ) -> list[YouTubeVideoInfo]:
 	if working_folder is None:
 		working_folder = destination_folder
+
+	dataset_filename = os.path.join(destination_folder, "videos_infos.json")
+	failed_filename = os.path.join(destination_folder, "failed.json")
 	dataset_metadata = []
 	failed = dict()
+	if resume_from_file:
+		with open(dataset_filename, "r") as dataset_file:
+			dataset_metadata = json.load(dataset_file)
+		with open(failed_filename, "r") as failed_file:
+			failed = json.load(failed_file)
+		
+	already_processed_video_ids = set([video["id"] for video in dataset_metadata]).union(set(failed.keys()))
+
+	def save_metadata(d, f):
+		with open(dataset_filename, "w") as dataset_file:
+			json.dump(d, dataset_file, cls=EnhancedJSONEncoder)
+		with open(failed_filename, "w") as failed_file:
+			json.dump(f, failed_file, cls=EnhancedJSONEncoder)
+
 	for i, video_id in enumerate(video_ids):
 		print(f"Processing video {i}/{len(video_ids)} ⚙️")
+		if video_id in already_processed_video_ids:
+			print(f"Skipping video {video_id} as it has already been processed.")
+			continue
 		try:
 			dataset_metadata.append(
 				generate_dataset_entry_from_video_id(
@@ -149,13 +172,10 @@ def generate_dataset_from_video_ids(
 			print(exception)
 			failed[video_id] = str(exception)
 			continue
+		if (i + 1) % save_every_n_videos == 0:
+			save_metadata(dataset_metadata, failed)
 
-	dataset_filename = os.path.join(destination_folder, "videos_infos.json")
-	with open(dataset_filename, "w") as dataset_file:
-		json.dump(dataset_metadata, dataset_file, cls=EnhancedJSONEncoder)
-	failed_filename = os.path.join(destination_folder, "failed.json")
-	with open(failed_filename, "w") as failed_file:
-		json.dump(failed, failed_file, cls=EnhancedJSONEncoder)
+	save_metadata(dataset_metadata, failed)
 	return dataset_metadata
 
 
@@ -164,5 +184,5 @@ if __name__ == "__main__":
 
 	random.seed(42)
 	generate_dataset_from_video_ids(
-		None, ["dQw4w9WgXcQ", "csdXyd3B2EQ"], "data/mydataset-test", 3, False
+		None, ["dQw4w9WgXcQ", "csdXyd3B2EQ"], "data/mydataset-test", 0, False
 	)

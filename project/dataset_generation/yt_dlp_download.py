@@ -8,7 +8,7 @@ from project.models import YouTubeVideoInfo
 YOUTUBE_VIDEO_URL_FORMAT = "https://www.youtube.com/watch?v={}"
 
 
-def download_video_and_metadata(video_id: str, download_folder: str) -> YouTubeVideoInfo:
+def download_video_and_metadata(video_id: str, download_folder: str, download_video: bool = True):
 	# Configure yt-dlp options
 	ydl_opts = {
 		"extractor_args": {
@@ -32,7 +32,7 @@ def download_video_and_metadata(video_id: str, download_folder: str) -> YouTubeV
 
 	# Download video, thumbnail, and metadata
 	with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-		info = ydl.extract_info(YOUTUBE_VIDEO_URL_FORMAT.format(video_id), download=True)
+		video_info = ydl.extract_info(YOUTUBE_VIDEO_URL_FORMAT.format(video_id), download=download_video)
 
 	# Automatic subs
 	auto_subs_opts = {
@@ -51,7 +51,7 @@ def download_video_and_metadata(video_id: str, download_folder: str) -> YouTubeV
 	}
 
 	with yt_dlp.YoutubeDL(auto_subs_opts) as ydl:
-		ydl.process_ie_result(info)
+		ydl.process_ie_result(video_info)
 		# Postprocessors are not invoked by that method so this is a workaround
 		auto_subs_paths = glob.glob(f"{download_folder}/{video_id}.auto-subs.en.*")
 		if auto_subs_paths:
@@ -59,7 +59,8 @@ def download_video_and_metadata(video_id: str, download_folder: str) -> YouTubeV
 			yt_dlp_utils.convert_subtitles_to_srt(
 				auto_subs_paths[0], f"{download_folder}/{video_id}.auto-subs.en.srt"
 			)
-
+	
+	return video_info
 
 if __name__ == "__main__":
 	download_video_and_metadata("dQw4w9WgXcQ", ".")

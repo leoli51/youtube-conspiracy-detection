@@ -6,7 +6,9 @@ def text_from_subtitles(raw_subtitles: str) -> str:
 	for sub in srt.parse(raw_subtitles):
 		for s in sub.content.splitlines():
 			subs.append(s.strip())
-
+	# Handle case where subs are present but empty
+	if not subs:
+		return ""
 	pretty_subs = [subs[0]]
 	last_pretty_sub = subs[0]
 	for sub in subs:

@@ -11,7 +11,7 @@ class Experiment:
 	attributes: list[str]
 	completions_by_model_and_video_id: dict[str, dict[str, Any]]
 	description: str | None
-	end_time: datetime
+	end_time: datetime | None
 	id: str
 	image_filename_format: str | None
 	models: list[str]
@@ -66,7 +66,7 @@ class Experiment:
 	@classmethod
 	def from_json(cls, json_data) -> Experiment:
 		json_data["start_time"] = datetime.fromisoformat(json_data["start_time"])
-		json_data["end_time"] = datetime.fromisoformat(json_data["end_time"])
+		json_data["end_time"] = datetime.fromisoformat(json_data["end_time"]) if json_data.get("end_time") else None
 		json_data["image_filename_format"] = json_data.get("image_filename_format")
 		json_data["description"] = json_data.get("description")
 		return cls(**json_data)
