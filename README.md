@@ -1,6 +1,4 @@
-# master-thesis
-
-Master thesis in Computer Science and Engineering at Pollimi. Topic: Conspiracy Theories, Fake News, Computational Sociology, AI/ML, Fact Checking,  
+# Evaluating AI capabilities in detecting conspiracy theories on YouTube
 
 ## Installation
 
@@ -8,7 +6,6 @@ Master thesis in Computer Science and Engineering at Pollimi. Topic: Conspiracy 
 2. Clone this repository
 3. Run `poetry install`
 4. 🎉
-
 
 ## Running code with Google APIs
 
